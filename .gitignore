@@ -23,3 +23,11 @@ dist/
 
 # environment variables
 .env
+
+.mops
+
+package-lock.json
+
+
+# src/env/lib.mo
+canister_ids.json

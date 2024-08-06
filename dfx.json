@@ -4,15 +4,17 @@
       "main": "src/bb-demo-backend/main.mo",
       "type": "motoko"
     },
+
     "bb-demo-frontend": {
-      "dependencies": [
-        "bb-demo-backend"
-      ],
-      "source": [
-        "src/bb-demo-frontend/dist"
-      ],
+      "dependencies": ["bb-demo-backend", "blueband_db_provider"],
+      "source": ["src/bb-demo-frontend/dist"],
       "type": "assets",
       "workspace": "bb-demo-frontend"
+    },
+    "blueband_db_provider": {
+      "type": "custom",
+      "candid": "https://github.com/acgodson/blueband-db/releases/download/v0.0.9/blueband-db-backend.did",
+      "wasm": "https://github.com/acgodson/blueband-db/releases/download/v0.0.9/blueband-db-backend.wasm.gz"
     },
     "internet_identity": {
       "candid": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity.did",
@@ -29,7 +31,7 @@
   "defaults": {
     "build": {
       "args": "",
-      "packtool": ""
+      "packtool": "mops sources"
     }
   },
   "output_env_file": ".env",
