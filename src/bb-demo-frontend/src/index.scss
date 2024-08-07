@@ -121,6 +121,11 @@ button {
   opacity: 0.3;
 }
 
+.active {
+  background-color: #3182ce;
+  opacity: 1;
+}
+
 .drop-inset {
   background-color: whitesmoke;
   min-height: 120px;

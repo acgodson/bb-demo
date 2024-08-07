@@ -24,7 +24,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-dropzone": "^14.2.3",
-    "ic-use-blueband-db": "^0.1.0"
+    "ic-use-blueband-db": "^0.1.2"
   },
   "devDependencies": {
     "@types/react": "^18.2.14",

@@ -29,5 +29,5 @@ dist/
 package-lock.json
 
 
-# src/env/lib.mo
+src/env/lib.mo
 canister_ids.json

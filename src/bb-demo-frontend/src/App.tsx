@@ -14,17 +14,24 @@ const App: React.FC = () => {
   const [db, setDB] = useState<BlueBand | null>(null);
   const [parsedContent, setParsedContent] = useState<string | null>(null);
   const [loading, setIsLoading] = useState<boolean>(false);
+  const [querying, setQuerying] = useState(false);
   const [file, setFile] = useState<string | null>(null);
-  const [myDocuments, setMyDocuments] = useState<any[]>([]);
+  const [collectionId, setCollectionId] = useState<string | null>(null);
+  const [myDocuments, setMyDocuments] = useState<any[] | null>(null);
   const [prompt, setPrompt] = useState("");
   const [logs, setLogs] = useState<string[]>([]);
   const [queryResults, setQueryResults] = useState<any[]>([]);
   const [isResultsExpanded, setIsResultsExpanded] = useState(false);
   const [activeTab, setActiveTab] = useState<"upload" | "query">("upload");
 
-  const disabled = !file;
   const disabledLogin =
     loginStatus === "logging-in" || loginStatus === "success" || !!identity;
+  const disableAdd = !file || loading;
+  const disableQuery =
+    loading ||
+    querying ||
+    !myDocuments ||
+    (myDocuments && myDocuments.length < 1);
 
   const addLog = (message: string) => {
     setLogs((prevLogs) => [
@@ -85,11 +92,14 @@ const App: React.FC = () => {
       const localIndex = await db.initialize();
       setIndex(localIndex);
       addLog(`Initialized local index for collection: ${collectionId}`);
-      const result = await db.getDocuments(collectionId);
-      if (result) {
-        setMyDocuments(result.documents);
-      }
+      setCollectionId(collectionId);
     }
+  };
+
+  const reset = () => {
+    setFile(null);
+    setParsedContent(null);
+    setMyDocuments(null);
   };
 
   const AddItem = useCallback(async () => {
@@ -103,6 +113,7 @@ const App: React.FC = () => {
       const result = await db.addDocumentAndVector(index, title, parsedContent);
       addLog(`Document added successfully. ID: ${result.documentId!}`);
       setIsLoading(false);
+      reset();
     } catch (e) {
       setIsLoading(false);
       console.error(e);
@@ -116,13 +127,31 @@ const App: React.FC = () => {
       return;
     }
     try {
+      setQuerying(true);
       const results = await db.similarityQuery(index, prompt);
       addLog(`Query processed ${results.length} results`);
       setQueryResults(results);
+      setQuerying(false);
     } catch (e) {
       addLog(`Error in similarity query: ${e}`);
+      setQuerying(false);
     }
   }, [index, db, identity, prompt, addLog]);
+
+  useEffect(() => {
+    const fetchDocuments = async () => {
+      if (!db || !collectionId) {
+        return;
+      }
+      const result = await db.getDocuments(collectionId);
+      if (result) {
+        setMyDocuments(result.documents);
+      }
+    };
+    if (db && collectionId && !myDocuments) {
+      fetchDocuments();
+    }
+  }, [db, collectionId, myDocuments]);
 
   return (
     <div className="layout">
@@ -185,8 +214,8 @@ const App: React.FC = () => {
             )}
 
             <button
-              className={disabled ? `disabled` : `active`}
-              onClick={disabled ? () => {} : AddItem}
+              className={!disabledLogin || disableAdd ? `disabled` : `active`}
+              onClick={!disabledLogin || disableAdd ? () => {} : AddItem}
             >
               {!loading ? "Add Document" : "Adding..."}
             </button>
@@ -208,8 +237,13 @@ const App: React.FC = () => {
                 placeholder="Enter Keyword or Prompt"
                 onChange={(e) => setPrompt(e.target.value)}
               />
-              <button className="active" onClick={QueryItems}>
-                {!loading ? "Query Document" : "Querying..."}
+              <button
+                className={
+                  !disabledLogin || disableQuery ? `disabled` : `active`
+                }
+                onClick={!disabledLogin || disableQuery ? () => {} : QueryItems}
+              >
+                {!querying ? "Query Document" : "Querying..."}
               </button>
             </div>
             <div>
